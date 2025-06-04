@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>aizy | KI-Chat</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f0f2f5;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    header {
+      background-color: #ff6600;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    #chatbox {
+      flex: 1;
+      padding: 1.5rem;
+      overflow-y: auto;
+      background-color: #fff;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .message {
+      max-width: 75%;
+      padding: 0.8rem 1rem;
+      border-radius: 1rem;
+      line-height: 1.4;
+      white-space: pre-wrap;
+    }
+
+    .user-msg {
+      align-self: flex-end;
+      background-color: #ff6600;
+      color: white;
+      border-bottom-right-radius: 0;
+    }
+
+    .bot-msg {
+      align-self: flex-start;
+      background-color: #f1f1f1;
+      color: #333;
+      border-bottom-left-radius: 0;
+    }
+
+    .input-area {
+      display: flex;
+      padding: 1rem;
+      border-top: 1px solid #ddd;
+      background-color: #fff;
+    }
+
+    #userinput {
+      flex: 1;
+      padding: 0.8rem 1rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    #sendbtn {
+      margin-left: 0.5rem;
+      padding: 0.8rem 1.2rem;
+      font-size: 1rem;
+      background-color: #ff6600;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    #sendbtn:hover {
+      background-color: #e05700;
+    }
+
+    @media (max-width: 600px) {
+      .message {
+        max-width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>AIZY – Der KI-Chat für dein Unternehmen!</header>
+
+  <div id="chatbox"></div>
+
+  <div class="input-area">
+    <input id="userinput" type="text" autocomplete="off" placeholder="Deine Frage an aizy..." />
+    <button id="sendbtn">Senden</button>
+  </div>
+
+  <script>
+    const chatbox = document.getElementById('chatbox');
+    const userinput = document.getElementById('userinput');
+    const sendbtn = document.getElementById('sendbtn');
+
+    function appendMessage(text, isUser) {
+      const msg = document.createElement('div');
+      msg.className = 'message ' + (isUser ? 'user-msg' : 'bot-msg');
+      msg.textContent = text;
+      chatbox.appendChild(msg);
+      chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const text = userinput.value.trim();
+      if (!text) return;
+
+      appendMessage(text, true);
+      userinput.value = '';
+      
+      try {
+        const response = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+        const data = await response.json();
+        appendMessage(data.reply, false);
+      } catch (err) {
+        appendMessage('❌ Fehler bei der Verbindung zum Server.', false);
+      }
+    }
+
+    sendbtn.onclick = sendMessage;
+    userinput.addEventListener('keypress', e => {
+      if (e.key === 'Enter') sendMessage();
+    });
+  </script>
+
+</body>
+</html>
